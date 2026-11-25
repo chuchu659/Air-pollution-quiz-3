@@ -1,0 +1,548 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Air Pollution Quiz Game</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #102b46, #167c80);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #172b3a;
+}
+
+.game {
+    background: white;
+    width: 100%;
+    max-width: 550px;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 35px #0004;
+}
+
+h1 {
+    text-align: center;
+    color: #147b79;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #667;
+    margin-bottom: 25px;
+}
+
+.info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+.progress-bg {
+    height: 10px;
+    background: #e4eeee;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 25px;
+}
+
+.progress {
+    height: 100%;
+    width: 0%;
+    background: #18a999;
+    transition: width .3s;
+}
+
+.question {
+    font-size: 19px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.option {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0;
+    border: 2px solid #dce7e7;
+    border-radius: 12px;
+    background: white;
+    text-align: left;
+    font-size: 15px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.option:hover:not(:disabled) {
+    background: #e7f8f5;
+    border-color: #18a999;
+}
+
+.option:disabled {
+    cursor: default;
+    opacity: 1;
+}
+
+.correct {
+    background: #d6f7df !important;
+    border-color: #20a34a !important;
+}
+
+.wrong {
+    background: #ffe0e0 !important;
+    border-color: #e34b4b !important;
+}
+
+.feedback {
+    margin-top: 18px;
+    padding: 13px;
+    border-radius: 10px;
+    display: none;
+    line-height: 1.5;
+}
+
+.next, .restart {
+    width: 100%;
+    padding: 15px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 12px;
+    background: #147b79;
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.next:hover, .restart:hover {
+    background: #105f5d;
+}
+
+.result {
+    text-align: center;
+    display: none;
+}
+
+.result h2 {
+    color: #147b79;
+}
+
+.score {
+    font-size: 45px;
+    font-weight: bold;
+    color: #18a999;
+}
+
+#gameArea {
+    display: block;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+<h1>🌍 Air Pollution Quiz</h1>
+<p class="subtitle">Test your knowledge about PM2.5, PM10 and AQI!</p>
+
+<div id="gameArea">
+
+<div class="info">
+<span id="questionNumber">Question 1/25</span>
+<span id="score">Score: 0</span>
+</div>
+
+<div class="progress-bg">
+<div class="progress" id="progress"></div>
+</div>
+
+<div class="question" id="question"></div>
+
+<div id="options"></div>
+
+<div class="feedback" id="feedback"></div>
+
+<button class="next" id="nextBtn" style="display:none">
+Next Question →
+</button>
+
+</div>
+
+<div class="result" id="result">
+<h2>🎉 Quiz Completed!</h2>
+<p>Your final score is:</p>
+<div class="score" id="finalScore"></div>
+<h3 id="message"></h3>
+<p id="percentage"></p>
+<button class="restart" onclick="restartQuiz()">
+🔄 Play Again
+</button>
+</div>
+
+</div>
+
+<script>
+
+const questions = [
+
+{
+q:"What does AQI stand for?",
+o:["Air Quality Index","Air Quantity Indicator","Atmospheric Quality Information","Air Quota Index"],
+a:0,
+e:"AQI stands for Air Quality Index."
+},
+
+{
+q:"What does PM stand for in air pollution?",
+o:["Polluted Matter","Particulate Matter","Primary Molecules","Particle Measurement"],
+a:1,
+e:"PM means Particulate Matter."
+},
+
+{
+q:"Which particulate matter is smaller?",
+o:["PM10","PM2.5","Both are equal","PM100"],
+a:1,
+e:"PM2.5 has a diameter of 2.5 micrometres or less."
+},
+
+{
+q:"Which pollutant can penetrate deeper into the lungs?",
+o:["PM10","PM2.5","Pollen","Large dust particles"],
+a:1,
+e:"PM2.5 can reach deep into the lungs."
+},
+
+{
+q:"What is the unit used to measure PM2.5 concentration?",
+o:["Kilograms","Metres","µg/m³","Litres"],
+a:2,
+e:"It is measured in micrograms per cubic metre."
+},
+
+{
+q:"What is the main source of carbon monoxide?",
+o:["Incomplete combustion","Photosynthesis","Evaporation of water","Plant respiration"],
+a:0,
+e:"Incomplete combustion of carbon-containing fuels produces carbon monoxide."
+},
+
+{
+q:"Which gas is commonly associated with acid rain?",
+o:["Oxygen","Nitrogen","Sulphur dioxide","Hydrogen"],
+a:2,
+e:"Sulphur dioxide contributes to acid rain."
+},
+
+{
+q:"Which of these is a secondary air pollutant?",
+o:["Carbon monoxide","Sulphur dioxide","Ground-level ozone","Dust"],
+a:2,
+e:"Ground-level ozone forms through atmospheric chemical reactions."
+},
+
+{
+q:"What is a major source of nitrogen dioxide in urban areas?",
+o:["Vehicle emissions","Ocean water","Plants","Rainfall"],
+a:0,
+e:"Vehicle combustion is a major source of nitrogen oxides."
+},
+
+{
+q:"Which AQI category corresponds to 51–100 on the US AQI scale?",
+o:["Good","Moderate","Unhealthy","Hazardous"],
+a:1,
+e:"51–100 is classified as Moderate."
+},
+
+{
+q:"What was the outdoor AQI in the Dimapur screenshot?",
+o:["51","68","91","100"],
+a:1,
+e:"The outdoor AQI was 68."
+},
+
+{
+q:"What was the main pollutant shown in the screenshot?",
+o:["PM10","CO₂","PM2.5","SO₂"],
+a:2,
+e:"PM2.5 was listed as the main pollutant."
+},
+
+{
+q:"What was the outdoor PM2.5 concentration?",
+o:["9.2 µg/m³","18.4 µg/m³","6.8 µg/m³","51 µg/m³"],
+a:1,
+e:"The outdoor concentration was 18.4 µg/m³."
+},
+
+{
+q:"What was the home PM2.5 concentration?",
+o:["18.4 µg/m³","12.5 µg/m³","9.2 µg/m³","6.8 µg/m³"],
+a:2,
+e:"The home reading was 9.2 µg/m³."
+},
+
+{
+q:"Which of these can help reduce air pollution?",
+o:["Burning plastic","Using public transport","Deforestation","Burning garbage"],
+a:1,
+e:"Public transport can reduce emissions per passenger."
+},
+
+{
+q:"Photochemical smog is primarily formed by:",
+o:["Sunlight, nitrogen oxides and VOCs","Water and oxygen only","Dust and rain","Carbon dioxide and nitrogen"],
+a:0,
+e:"Sunlight drives reactions between nitrogen oxides and volatile organic compounds."
+},
+
+{
+q:"Which organ is most directly affected by inhaled particulate matter?",
+o:["Kidneys","Lungs","Stomach","Liver"],
+a:1,
+e:"The respiratory system is directly exposed to inhaled particles."
+},
+
+{
+q:"Can indoor air pollution be higher than outdoor air pollution?",
+o:["Never","Yes","Only during winter","Only near factories"],
+a:1,
+e:"Cooking smoke, poor ventilation and other indoor sources can increase pollution."
+},
+
+{
+q:"What is the main natural source of pollen in the air?",
+o:["Factories","Vehicles","Plants","Power stations"],
+a:2,
+e:"Pollen is released by plants."
+},
+
+{
+q:"Which process helps remove particulate matter from the atmosphere?",
+o:["Rainfall","Deforestation","Combustion","Industrialisation"],
+a:0,
+e:"Rain can wash airborne particles out of the atmosphere."
+},
+
+{
+q:"What does µg/m³ represent?",
+o:["Micrograms per cubic metre","Milligrams per metre","Micrometres per gram","Micrograms per litre"],
+a:0,
+e:"It expresses the mass concentration of particles in air."
+},
+
+{
+q:"Which gas is a major greenhouse gas?",
+o:["Carbon dioxide","Argon","Helium","Neon"],
+a:0,
+e:"Carbon dioxide contributes to the greenhouse effect."
+},
+
+{
+q:"Why can PM2.5 remain suspended in air for long periods?",
+o:["It is very small and settles slowly","It is heavier than rocks","It dissolves instantly","It is a gas"],
+a:0,
+e:"Its small size and low settling speed allow it to remain airborne."
+},
+
+{
+q:"What is the US AQI category for a reading of 68?",
+o:["Good","Moderate","Unhealthy","Very unhealthy"],
+a:1,
+e:"A reading of 68 falls in the Moderate range."
+},
+
+{
+q:"Which of these is NOT a common source of air pollution?",
+o:["Vehicle exhaust","Industrial emissions","Burning waste","Solar energy generation"],
+a:3,
+e:"Solar energy generates electricity without direct combustion emissions."
+}
+
+];
+
+let current = 0;
+let points = 0;
+let answered = false;
+
+function loadQuestion() {
+
+answered = false;
+
+const q = questions[current];
+
+document.getElementById("questionNumber").textContent =
+"Question " + (current+1) + "/" + questions.length;
+
+document.getElementById("score").textContent =
+"Score: " + points;
+
+document.getElementById("progress").style.width =
+(current/questions.length)*100 + "%";
+
+document.getElementById("question").textContent =
+(current+1) + ". " + q.q;
+
+document.getElementById("feedback").style.display = "none";
+
+document.getElementById("nextBtn").style.display = "none";
+
+const options = document.getElementById("options");
+
+options.innerHTML = "";
+
+q.o.forEach((option,index) => {
+
+const btn = document.createElement("button");
+
+btn.className = "option";
+
+btn.textContent =
+String.fromCharCode(65+index) + ". " + option;
+
+btn.onclick = () => selectAnswer(index,btn);
+
+options.appendChild(btn);
+
+});
+
+}
+
+function selectAnswer(index,button) {
+
+if(answered) return;
+
+answered = true;
+
+const q = questions[current];
+
+const buttons = document.querySelectorAll(".option");
+
+buttons.forEach((btn,i) => {
+
+btn.disabled = true;
+
+if(i === q.a) {
+btn.classList.add("correct");
+}
+
+});
+
+const feedback = document.getElementById("feedback");
+
+if(index === q.a) {
+
+points++;
+
+feedback.style.background = "#d6f7df";
+feedback.style.color = "#14652c";
+
+feedback.innerHTML = "✅ Correct! " + q.e;
+
+} else {
+
+button.classList.add("wrong");
+
+feedback.style.background = "#ffe0e0";
+feedback.style.color = "#a52222";
+
+feedback.innerHTML =
+"❌ Incorrect! Correct answer: " +
+q.o[q.a] + "<br>" + q.e;
+
+}
+
+feedback.style.display = "block";
+
+document.getElementById("score").textContent =
+"Score: " + points;
+
+document.getElementById("nextBtn").style.display = "block";
+
+}
+
+document.getElementById("nextBtn").onclick = () => {
+
+current++;
+
+if(current < questions.length) {
+
+loadQuestion();
+
+} else {
+
+showResult();
+
+}
+
+};
+
+function showResult() {
+
+document.getElementById("gameArea").style.display = "none";
+
+document.getElementById("result").style.display = "block";
+
+document.getElementById("progress").style.width = "100%";
+
+document.getElementById("finalScore").textContent =
+points + "/25";
+
+document.getElementById("percentage").textContent =
+"Percentage: " + (points/25*100) + "%";
+
+let message = "";
+
+if(points >= 22) {
+message = "🏆 Excellent! Air Pollution Expert!";
+}
+else if(points >= 18) {
+message = "🌟 Very Good! Keep it up!";
+}
+else if(points >= 13) {
+message = "👍 Good effort! Keep learning!";
+}
+else {
+message = "📚 Keep practising. You can do better!";
+}
+
+document.getElementById("message").textContent = message;
+
+}
+
+function restartQuiz() {
+
+current = 0;
+points = 0;
+answered = false;
+
+document.getElementById("result").style.display = "none";
+
+document.getElementById("gameArea").style.display = "block";
+
+loadQuestion();
+
+}
+
+loadQuestion();
+
+</script>
+
+</body>
+</html>
